@@ -37,6 +37,7 @@ void create(){
     cout << "Enter Unit Price: ";
     cin >> unitPrice;
 
+    
     // Write to CSV
     file << date << "," << saleID << "," << itemName << "," << quantity << "," << unitPrice << "\n";
 
