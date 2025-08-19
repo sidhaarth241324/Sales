@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <cstdlib>
 #include <ctime>
 using namespace std;
@@ -37,13 +38,59 @@ void create(){
     cout << "Enter Unit Price: ";
     cin >> unitPrice;
 
-    
+
     // Write to CSV
     file << date << "," << saleID << "," << itemName << "," << quantity << "," << unitPrice << "\n";
 
     file.close();
     cout << "Record saved successfully in sales.csv!\n";
 }
+
+void read(){
+    ifstream file("sales.csv");
+    if (!file) {
+        cout << "sales.csv not found!\n";
+        return;
+    }
+
+    string line;
+    getline(file, line); // Skip header
+
+    bool isEmpty = true;
+
+    cout << "\nSales Records:\n";
+    cout << "--------------------------------------------------------\n";
+    cout << "Date         SaleID   Item       Quantity    Price\n";
+    cout << "--------------------------------------------------------\n";
+
+    while (getline(file, line)) {
+        if (line.empty()) continue;
+        isEmpty = false;
+
+        // Split by comma
+        stringstream ss(line);
+        string date, saleID, item, quantity, price;
+        getline(ss, date, ',');
+        getline(ss, saleID, ',');
+        getline(ss, item, ',');
+        getline(ss, quantity, ',');
+        getline(ss, price, ',');
+
+        // Display
+        cout << date << "   " << saleID << "     "
+             << item << "       " << quantity
+             << "         " << price << "\n";
+    }
+
+    if (isEmpty) {
+        cout << "No records found. The list is empty!\n";
+    }
+    cout << "--------------------------------------------------------\n";
+
+    file.close();
+}
+
+
 
 int main() 
 {
@@ -54,8 +101,8 @@ int main()
         
         cout<<"sales.csv exists" << endl;
         create();
-        // read();
-        // update();
+        read();
+        update();
         // delete();
     } else {
         cout << "Create a sales.csv" << endl;
