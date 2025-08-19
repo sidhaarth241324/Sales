@@ -92,6 +92,13 @@ void read(){
 }
 
 void update(){
+    char update;
+    cout << "Do you want to update a record? (y/n): ";
+    cin >> update;
+    if (update != 'y') {
+        cout << "Update cancelled.\n";
+        return;
+    }else{
     ifstream file("sales.csv");
     if (!file) {
         cout << "sales.csv not found!\n";
@@ -149,6 +156,7 @@ void update(){
             records[i] = date + "," + saleID + "," + item + "," + quantity + "," + price;
             break;
         }
+    
     }
 
     if (!found) {
@@ -166,7 +174,77 @@ void update(){
 
     cout << "Record updated successfully!\n";
 }
+}
+void deleterecord(){
+    char deleterecord;
+    cout << "Do you want to delete a record? (y/n): ";
+    cin >> deleterecord;
+    if (deleterecord != 'y') {
+        cout << "Deletion cancelled.\n";
+        return;
+    }else{
+    ifstream file("sales.csv");
+    if (!file) {
+        cout << "sales.csv not found!\n";
+        return;
+    }
 
+    string line;
+    getline(file, line); // Header
+    string header = line;
+
+    vector<string> records;
+    while (getline(file, line)) {
+        if (!line.empty()) {
+            records.push_back(line);
+        }
+    }
+    file.close();
+
+    if (records.empty()) {
+        cout << "No records found. The list is empty!\n";
+        return;
+    }
+
+    string searchID;
+    cout << "Enter SaleID to delete: ";
+    cin >> searchID;
+
+    bool found = false;
+
+    for (size_t i = 0; i < records.size(); i++) {
+        stringstream ss(records[i]);
+        string date, saleID, item, quantity, price;
+        getline(ss, date, ',');
+        getline(ss, saleID, ',');
+        getline(ss, item, ',');
+        getline(ss, quantity, ',');
+        getline(ss, price, ',');
+
+        if (saleID == searchID) {
+            found = true;
+            cout << "Record deleted: " << records[i] << "\n";
+            records.erase(records.begin() + i);
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Error: SaleID not found!\n";
+        return;
+    }
+
+    // Rewrite updated data back to file
+    ofstream outFile("sales.csv");
+    outFile << header << "\n";
+    for (string &rec : records) {
+        outFile << rec << "\n";
+    }
+    outFile.close();
+
+    cout << "Record deleted successfully!\n";
+}
+}
 
 
 int main() 
@@ -180,7 +258,8 @@ int main()
         create();
         read();
         update();
-        // delete();
+        deleterecord();
+
     } else {
         cout << "Create a sales.csv" << endl;
         ofstream file("sales.csv");
@@ -190,12 +269,13 @@ int main()
     cin >> chh;
     if (chh=='y'){
         cout << "temp.csv exists" << endl;
-        // sort();
+        sort();
         // Report();
     }else{
         cout << "Create a temp.csv" << endl;
         ofstream file("temp.csv");
     }
+    
 }    
    
     
