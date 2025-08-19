@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <algorithm>
 using namespace std;
 
 void create(){
@@ -246,6 +247,94 @@ void deleterecord(){
 }
 }
 
+struct Sale {
+    string date;
+    string saleID;
+    string item;
+    string quantity;
+    string price;
+};
+
+// Convert DD/MM/YYYY → YYYY-MM-DD
+string convertDate(const string& date) {
+    if (date.size() != 10 || date[2] != '/' || date[5] != '/') return date;
+    string yyyy = date.substr(6, 4);
+    string mm = date.substr(3, 2);
+    string dd = date.substr(0, 2);
+    return yyyy + "-" + mm + "-" + dd;
+}
+
+void sortAndAppend() {
+    ifstream file("sales.csv");
+    if (!file) {
+        cout << "sales.csv not found!\n";
+        return;
+    }
+
+    string line;
+    getline(file, line); // Header
+    vector<Sale> sales;
+
+    // Read sales.csv into vector
+    while (getline(file, line)) {
+        if (!line.empty()) {
+            stringstream ss(line);
+            Sale s;
+            getline(ss, s.date, ',');
+            getline(ss, s.saleID, ',');
+            getline(ss, s.item, ',');
+            getline(ss, s.quantity, ',');
+            getline(ss, s.price, ',');
+            sales.push_back(s);
+        }
+    }
+    file.close();
+
+    if (sales.empty()) {
+        cout << "No records found in sales.csv.\n";
+        return;
+    }
+
+    // Sort by converted date (YYYY-MM-DD)
+    sort(sales.begin(), sales.end(), [](Sale a, Sale b) {
+        return convertDate(a.date) < convertDate(b.date);
+    });
+
+    // Read existing SaleIDs from temp.csv to prevent duplicates
+    vector<string> existingIDs;
+    ifstream tempCheck("temp.csv");
+    if (tempCheck) {
+        string header;
+        getline(tempCheck, header); // skip header
+        string line;
+        while (getline(tempCheck, line)) {
+            stringstream ss(line);
+            string d, id;
+            getline(ss, d, ',');
+            getline(ss, id, ',');
+            existingIDs.push_back(id);
+        }
+    }
+    tempCheck.close();
+
+    // Open temp.csv in append mode
+    ofstream tempFile("temp.csv", ios::app);
+    if (existingIDs.empty()) {
+        tempFile << "Date,SaleID,Item,Quantity,Price\n";
+    }
+
+    // Append only new records (with converted date)
+    for (auto &s : sales) {
+        if (find(existingIDs.begin(), existingIDs.end(), s.saleID) == existingIDs.end()) {
+            tempFile << convertDate(s.date) << "," << s.saleID << "," << s.item
+                     << "," << s.quantity << "," << s.price << "\n";
+        }
+    }
+    tempFile.close();
+
+    cout << "Sorted data appended to temp.csv in YYYY-MM-DD format.\n";
+}
+
 
 int main() 
 {
@@ -269,13 +358,11 @@ int main()
     cin >> chh;
     if (chh=='y'){
         cout << "temp.csv exists" << endl;
-        sort();
+        sortAndAppend();
         // Report();
     }else{
         cout << "Create a temp.csv" << endl;
         ofstream file("temp.csv");
     }
     
-}    
-   
-    
+} 
