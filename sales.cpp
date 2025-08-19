@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <cstdlib>
 #include <ctime>
 using namespace std;
@@ -88,6 +89,82 @@ void read(){
     cout << "--------------------------------------------------------\n";
 
     file.close();
+}
+
+void update(){
+    ifstream file("sales.csv");
+    if (!file) {
+        cout << "sales.csv not found!\n";
+        return;
+    }
+
+    string line;
+    getline(file, line); // Read header
+    string header = line;
+
+    vector<string> records;
+    while (getline(file, line)) {
+        if (!line.empty()) {
+            records.push_back(line);
+        }
+    }
+    file.close();
+
+    if (records.empty()) {
+        cout << "No records found. The list is empty!\n";
+        return;
+    }
+
+    string searchID;
+    cout << "Enter SaleID to update: ";
+    cin >> searchID;
+
+    bool found = false;
+    for (size_t i = 0; i < records.size(); i++) {
+        stringstream ss(records[i]);
+        string date, saleID, item, quantity, price;
+        getline(ss, date, ',');
+        getline(ss, saleID, ',');
+        getline(ss, item, ',');
+        getline(ss, quantity, ',');
+        getline(ss, price, ',');
+
+        if (saleID == searchID) {
+            found = true;
+            cout << "Record found! Current details:\n";
+            cout << "Date: " << date << " Item: " << item
+                 << " Quantity: " << quantity << " Price: " << price << "\n";
+
+            // Get new details
+            cout << "Enter new Date (DD/MM/YYYY): ";
+            cin >> date;
+            cout << "Enter new Item Name: ";
+            cin >> item;
+            cout << "Enter new Quantity: ";
+            cin >> quantity;
+            cout << "Enter new Price: ";
+            cin >> price;
+
+            // Update the record
+            records[i] = date + "," + saleID + "," + item + "," + quantity + "," + price;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Error: SaleID not found!\n";
+        return;
+    }
+
+    // Rewrite the CSV file with updated data
+    ofstream outFile("sales.csv");
+    outFile << header << "\n";
+    for (string &rec : records) {
+        outFile << rec << "\n";
+    }
+    outFile.close();
+
+    cout << "Record updated successfully!\n";
 }
 
 
